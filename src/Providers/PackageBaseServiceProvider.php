@@ -1,22 +1,19 @@
 <?php
 
-namespace Khapu\CurlPlatform;
+namespace Khapu\CurlPlatform\Providers;
 
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
 
 class PackageBaseServiceProvider extends ServiceProvider 
 {
     public function register()
     {
-        
+        ddsajfdioasjf
     }
 
     public function boot()
     {
-        dd('hello');   
+        dd('hello');   sdfas
     }
 
 }
