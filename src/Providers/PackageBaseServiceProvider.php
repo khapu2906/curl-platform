@@ -32,7 +32,6 @@ class PackageBaseServiceProvider extends ServiceProvider
         if (File::exists($this->_modulePath . $this->_moduleRoute)) {
             $this->loadRoutesFrom($this->_modulePath . "$this->_moduleRoute");
         }
-        dd(1);
         
     }
 

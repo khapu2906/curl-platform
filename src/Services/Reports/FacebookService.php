@@ -17,11 +17,21 @@ class FacebookService extends BaseService
         $this->_config = $this->_baseService->getConfig();
     }
 
-    public function getDetail()
+    public function getInsight($params, $tokens, $fields)
     {
-        // $this->_baseService->getSlug('insights', ['id' => '0123456789'] );
-        // $this->_baseService->getSlug('insights', ['id' => '0123456789']);
-        $url = $this->_baseService->getSlug('insights', ['id' => '0123456789'])->get();
-        return $url;
+        $response = $this->_baseService->getSlug('insights', $params)
+                                        ->getToken($tokens)
+                                        ->getField($fields)
+                                        ->get();
+        return $response;
+    }
+
+    public function getAccount($params, $tokens, $fields)
+    {
+        $response = $this->_baseService->getSlug('account', $params)
+                                        ->getToken($tokens)
+                                        ->getField($fields)
+                                        ->get();
+        return $response;
     }
 }
