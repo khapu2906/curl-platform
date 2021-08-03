@@ -3,7 +3,7 @@
     "description": "This package is used to call API from other platform",
     "type": "library",
     "require":{
-        
+        "guzzlehttp/guzzle": "^7.0"
     },
     "require-dev": {
     },
