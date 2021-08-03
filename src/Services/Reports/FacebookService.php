@@ -19,7 +19,9 @@ class FacebookService extends BaseService
 
     public function getDetail()
     {
-        $url = $this->_config;
+        // $this->_baseService->getSlug('insights', ['id' => '0123456789'] );
+        // $this->_baseService->getSlug('insights', ['id' => '0123456789']);
+        $url = $this->_baseService->getSlug('insights', ['id' => '0123456789'])->get();
         return $url;
     }
 }

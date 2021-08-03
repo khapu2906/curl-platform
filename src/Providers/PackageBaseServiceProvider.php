@@ -29,7 +29,6 @@ class PackageBaseServiceProvider extends ServiceProvider
                 $this->_modulePath . $this->_moduleConfig => config_path('platform.php'),
             ], 'config');
         }
-        
         if (File::exists($this->_modulePath . $this->_moduleRoute)) {
             $this->loadRoutesFrom($this->_modulePath . "$this->_moduleRoute");
         }

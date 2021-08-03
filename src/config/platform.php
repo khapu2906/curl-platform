@@ -10,16 +10,16 @@ return [
                 ]
             ]
 
-            If your path is unstatic, you could type '?'
+            If your path is unstatic, you could type ''
 
         */
     'facebook' => [
         'host' => 'graph.facebook.com',
         'version' => 'v11.0',
-        'component' => [
+        'slugs' => [
             'long_time_token' => 'oauth/access_token',
-            'insights' => '?/insights',
-            'ads' => '?/ads'
+            'insights' => '{id}/insights',
+            'ads' => '{id}/ads'
         ],
     ]
 ];

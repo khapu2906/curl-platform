@@ -2,6 +2,9 @@
     "name": "khapu/curl-platform",
     "description": "This package is used to call API from other platform",
     "type": "library",
+    "require":{
+        
+    },
     "require-dev": {
     },
     "license": "MIT",
