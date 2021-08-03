@@ -1,0 +1,32 @@
+{
+    "name": "khapu/curl-platform",
+    "description": "This package is used to call API from other platform",
+    "type": "library",
+    "require": {
+       
+    },
+    "require-dev": {
+      
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Khapu\\CurlPlatform\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Phung Dai Khanh",
+            "email": "daikhanh9260@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Khapu\\CurlPlatform\\Providers\\PackageBaseServiceProvider"
+            ],
+            "aliases": {}
+        }
+    }
+}
