@@ -15,15 +15,20 @@ class BaseService
 
     protected $path;
 
+    protected $version;
+
     protected $prefixURL = 'https';
 
     protected $url = '';
 
-    protected $token;
+    protected $token = [];
 
     protected $configs;
 
-    protected $options;
+    protected $options = [
+                        'headers' => [],
+                        'fields'  => []
+                        ];
 
     protected $guzzle;
 
@@ -35,7 +40,6 @@ class BaseService
      * @param int $timeout
      * @throws ErrorException
      */
-    
     public function __construct(string $configName, int $timeOut)
     {
         if ($timeOut > 0) {
@@ -50,35 +54,53 @@ class BaseService
             'verify' => false,
         ]);
         $this->configs = config($configName);   
-        $this->host = $this->configs['host'];
-        $this->setPath();
+        if (empty($this->configs['host'])) {
+            throw new ErrorException('Host is NULL!');
+        }
+        $this->host = current($this->configs['host']);
+        $this->version = (!empty($this->configs['version']))
+            ? current($this->configs['version']) : null;
     }
 
-    public function getSlug(string $slug, array $param = [])
+    /** 
+     *  @param string $host
+     *  @return mixed
+     * */ 
+    protected function setHost(string $host = null) : void
     {
-        if ($slug == null) {
-            throw new ErrorException('Slug is null!');
-        } else {
-            if (!array_key_exists($slug, $this->configs['slugs'])) {
-                throw new ErrorException('Slug is not found!');
-            }
-            $this->slug = $this->configs['slugs'][$slug];
-            if (substr_count($this->slug, '{') != count($param) 
-                || substr_count($this->slug, '}') != count($param)) {
-                throw new ErrorException('Slug is error!');
-            }
-            foreach ($param as $key => $value) {
-                $strSearch = '{' . $key . '}';
-                $this->slug = str_replace($strSearch, $value, $this->slug);
-            }
-            $this->setUrl();
-        }
-        return $this;
+        $this->host = (!empty($host)) ? $this->configs['host'][$host] : $this->host;
+    }
+
+    protected function getHost()
+    {
+        return $this->host;
+    }
+
+    /** 
+     *  @param string $version
+     *  @return mixed
+     * */
+    protected function setVersion(string $version = null): void
+    {
+        $this->version = (!empty($version)) ? $version : $this->version;
+    }
+
+    protected function getVersion()
+    {
+        return $this->version;
     }
 
     protected function setPath() : void
     {
-        $this->path = $this->prefixURL . "://" . $this->host . '/' .  $this->configs['version'];
+        $this->path = $this->prefixURL . "://" . $this->host;
+        $this->path = ($this->version !== null)
+            ? $this->path . '/' .  $this->version
+            : $this->path;
+    }
+
+    protected function getPath()
+    {
+        return $this->path;
     }
 
     protected function setUrl() : void
@@ -86,27 +108,111 @@ class BaseService
         $this->url = $this->path . '/' . $this->slug;
     }
 
+    protected function getUrl()
+    {
+        return $this->url;
+    }
+
+    /** 
+     *  @param array $token
+     * */ 
+
+    public function setToken(array $token = []) : void
+    {
+        $this->token = (!empty($token)) ? $token : $this->token;
+    }
+
+    protected function getToken()
+    {
+        return $this->token;
+    }
+
+    /** 
+     *  @param array $option
+     * */ 
+    protected function setOptions(array $options = []) : void 
+    {
+        $this->options = (!empty($options)) ? $options : $this->options;
+    }
+
+    protected function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * @param string $host
+     * @return mixed
+     */
+    public function host(string $host)
+    {
+        if (!array_key_exists($host, $this->configs['host'])) {
+            throw new ErrorException('Host not found!');
+        }
+        $this->host = $this->configs['host'][$host];
+        return $this;
+    }
+
+    /**
+     * @param string $version
+     * @return mixed
+     */
+    public function version(string $version)
+    {
+        if (!in_array($version, $this->configs['version'])) {
+            throw new ErrorException('Version not found!');
+        }
+        $this->version = $version;
+        return $this;
+    }
+  
     /** 
      *  @param array $token
      *  @return mixed
      * */ 
-
-    public function getToken($token = [])
+    public function token($token = [])
     {
         $this->token = $token;
         return $this;
     }
 
+    public function slug(string $slug, array $param = [])
+    {
+        if ($slug == null) {
+            throw new ErrorException('Slug is NULL!');
+        } else {
+            if (!array_key_exists($slug, $this->configs['slugs'])) {
+                throw new ErrorException('Slug not found!');
+            }
+            $this->slug = $this->configs['slugs'][$slug];
+            if (
+                substr_count($this->slug, '{') != count($param)
+                || substr_count($this->slug, '}') != count($param)
+            ) {
+                throw new ErrorException('Slug is error!');
+            }
+            foreach ($param as $key => $value) {
+                $strSearch = '{' . $key . '}';
+                $this->slug = str_replace($strSearch, $value, $this->slug);
+            }
+        }
+        return $this;
+    }
+
     /** 
-     *  @param array $fields
+     *  @param array $options
      *  @return mixed
      * */ 
+    public function fields(array $fields = []) {
+        $this->_formatOption($fields);
+        return $this;
+    }
 
-    public function getField(array $fields = [])
+    protected function _formatOption(array $fields = []) : void
     {
-        $this->options = array_merge_recursive([
-            'headers' => []
-        ], $fields);
+        $this->options['fields'] = (!empty($this->options['fields']))
+            ? array_merge_recursive_distinct($this->options['fields'], $fields)
+            : $fields; 
         if (!empty($this->token)) {
             $header = [];
             foreach ($this->token as $k => $v ) {
@@ -120,11 +226,11 @@ class BaseService
             }
             $this->options['headers'] = $header;
         }
-        return $this;
     }
 
     public function get()
     {   
+        $this->getAllProperties();
         $response = false;
         $curl = curl_init();
         $fields = '';
@@ -206,5 +312,22 @@ class BaseService
     public function getConfig()
     {
         return $this->configs;
+    }
+
+    protected function getAllProperties(): void
+    {
+        $this->setHost();
+        $this->getHost();
+        $this->setVersion();
+        $this->getVersion();
+        $this->setPath();
+        $this->getPath();
+        $this->setUrl();
+        $this->getUrl();
+        $this->setToken();
+        $this->getToken();
+        $this->setOptions();
+        $this->_formatOption();
+        $this->getOptions();
     }
 }
