@@ -38,11 +38,13 @@ class BaseService
     
     public function __construct(string $configName, int $timeOut)
     {
+        if ($timeOut > 0) {
+            $this->timeOut = $timeOut;
+        }
         if ($configName == null) {
             throw new ErrorException('Config not found!');
         }
         $configName = 'platform.' . $configName;
-        //$this->timeOut = $timeOut;
         $this->guzzle = new Client([
             'timeout' => $this->timeOut,
             'verify' => false,
@@ -63,7 +65,7 @@ class BaseService
             $this->slug = $this->configs['slugs'][$slug];
             if (substr_count($this->slug, '{') != count($param) 
                 || substr_count($this->slug, '}') != count($param)) {
-                throw new ErrorException('Slug!');
+                throw new ErrorException('Slug is error!');
             }
             foreach ($param as $key => $value) {
                 $strSearch = '{' . $key . '}';
@@ -74,21 +76,29 @@ class BaseService
         return $this;
     }
 
-    protected function setPath()
+    protected function setPath() : void
     {
         $this->path = $this->prefixURL . "://" . $this->host . '/' .  $this->configs['version'];
     }
 
-    protected function setUrl()
+    protected function setUrl() : void
     {
         $this->url = $this->path . '/' . $this->slug;
     }
-
+    /** 
+     *  @param array $token
+     *  @return mixed
+     * */ 
     public function getToken($token = [])
     {
         $this->token = $token;
         return $this;
     }
+
+    /** 
+     *  @param array $fields
+     *  @return mixed
+     * */ 
 
     public function getField(array $fields = [])
     {
