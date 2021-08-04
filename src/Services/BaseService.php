@@ -85,10 +85,12 @@ class BaseService
     {
         $this->url = $this->path . '/' . $this->slug;
     }
+
     /** 
      *  @param array $token
      *  @return mixed
      * */ 
+
     public function getToken($token = [])
     {
         $this->token = $token;
@@ -132,8 +134,11 @@ class BaseService
             }
         }
         $curlopt_url = $this->url . '?' . $fields;
-        $header = $this->options['headers'];
-        // dd($header);
+        $header = [];
+        foreach ($this->options['headers'] as $k => $v) {
+            $newValue = $k . ': ' . $v;
+            array_push($header, $newValue);
+        }
         curl_setopt_array($curl, array(
             CURLOPT_URL => $curlopt_url,
             CURLOPT_RETURNTRANSFER => true,

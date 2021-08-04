@@ -28,7 +28,7 @@ class TestController extends Controller
         // ];
 
         $token = [
-            'access_token' => 'EAAFxHGbIZBAcBAG92IEJEYqozU4qXXA6BuLYMq89kbr0h8kTwQZB8PX9qF9HZBKdt0Uwtto5b4n9xyPpdGiBmjay0IOkNcRkaLydEeIPEp1ZAgItZBI5GQML8fzqJoR5RH35pZAS7SecgUzD3tsJu9o3L7Qr864fgslDCvZApSWrQZDZD',
+            'access_token' => 'EAAFxHGbIZBAcBAKV9vc7Pv7UeLIPQtsH5xqIuty8c3pMUgSvVzeLYi8NRAfd6BdoIUa4cGYUzBpepld7fTHPWd3hGZC2De34bXSeSfpZB5qwVJU0QRL5wMZCrX5ZBlXJSNlo3BS0fiNezeFNZBzjiv3VZAYPBFNP9YGXMh9Ym2BfzvrZCUKcn05l',
         ];
         $params = ['id' => '23844819598520694'];
         // dd($testDetail->getLongTimeToken($fields));
