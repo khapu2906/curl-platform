@@ -47,8 +47,8 @@ class FacebookService extends BaseService
     public function getLongTimeToken($fields)
     {
         $response = $this->_baseService->getSlug('long_time_token')
-                                        ->getField($fields);
-                                        //->get();
+                                        ->getField($fields)
+                                        ->get();
         return $response;
     }
 }

@@ -34,7 +34,7 @@ class BaseService
      * @param string $configName
      * @param int $timeout
      * @throws ErrorException
-        */
+     */
     
     public function __construct(string $configName, int $timeOut)
     {
@@ -122,33 +122,64 @@ class BaseService
     }
 
     public function get()
-    {
-        try {
-            $response = false;
-            $res = $this->guzzle->get($this->url, $this->options);
-            $content = $res->getBody()->getContents();
-            $response = json_decode($content);
-          
-            if (isset($response->code) && $response->code != 200 && isset($response->message) && $response->message) {
-                $this->error(['url' => $this->url], 'GET', $response->code, $response->message);
+    {   
+        $response = false;
+        $curl = curl_init();
+        $fields = '';
+        foreach ($this->options as $k => $v) {
+            if ($k !== 'headers') {
+                $fields .= $k . '=' . $v . '&';
             }
-        } catch (ClientException $e) {
-            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
-        } catch (ServerException $e) {
-            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
-        } catch (RequestException $e) {
-            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
-        } catch (ErrorException $e) {
-            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
         }
+        $curlopt_url = $this->url . '?' . $fields;
+        $header = $this->options['headers'];
+        // dd($header);
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $curlopt_url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => $this->timeOut,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER =>$header,
+        ));
 
+        $response = curl_exec($curl);
+        $response = json_decode($response);
+        curl_close($curl);
         return $response;
     }
 
-    public function post()
-    {
+    // public function get()
+    // {
+    //     try {
+    //         $response = false;
+    //         $res = $this->guzzle->get($this->url, $this->options);
+    //         $content = $res->getBody()->getContents();
+    //         $response = json_decode($content);
+          
+    //         if (isset($response->code) && $response->code != 200 && isset($response->message) && $response->message) {
+    //             $this->error(['url' => $this->url], 'GET', $response->code, $response->message);
+    //         }
+    //     } catch (ClientException $e) {
+    //         $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+    //     } catch (ServerException $e) {
+    //         $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+    //     } catch (RequestException $e) {
+    //         $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+    //     } catch (ErrorException $e) {
+    //         $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+    //     }
 
-    }
+    //     return $response;
+    // }
+
+    // public function post()
+    // {
+
+    // }
 
     public function error($data = [], $method, $code = 404, $message = null)
     {
