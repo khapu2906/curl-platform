@@ -2,28 +2,35 @@
 
 namespace Khapu\CurlPlatform\Services\Reports;
 
-use Khapu\CurlPlatform\Services\BaseService;
+use Khapu\CurlPlatform\Services\Reports\PlatformService;
 
-class GoogleService extends BaseService
+class GoogleService 
 {
     private $_config;
 
-    private $_baseService;
+    private $_platformService;
 
     public function __construct()
     {
-        $this->_baseService = new BaseService('google', 30);
-
-        $this->_config = $this->_baseService->getConfig();
+        $this->_platformService = new PlatformService('google', 30);
     }
 
-    public function getExchangeToken($fields)
+    public function getExchangeToken(array $fields)
     {
-        $response = $this->_baseService->host('account')
+        $response = $this->_platformService->host('account')
                                         ->version('v2')
                                         ->slug('auth')
                                         ->fields($fields)
                                         ->get();
+        return $response;
+    }
+
+    public function getAccessToken(array $param)
+    {
+        $response = $this->_platformService->host('auth')
+                                        ->slug('token')
+                                        ->param($param)
+                                        ->post();
         return $response;
     }
     

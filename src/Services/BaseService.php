@@ -25,10 +25,7 @@ class BaseService
 
     protected $configs;
 
-    protected $options = [
-                        'headers' => [],
-                        'fields'  => []
-                        ];
+    protected $options = [];
 
     protected $guzzle;
 
@@ -60,6 +57,9 @@ class BaseService
         $this->host = current($this->configs['host']);
         $this->version = (!empty($this->configs['version']))
             ? current($this->configs['version']) : null;
+        $this->options = [
+                            'headers' => []
+                           ];
     }
 
     /** 
@@ -116,7 +116,6 @@ class BaseService
     /** 
      *  @param array $token
      * */ 
-
     public function setToken(array $token = []) : void
     {
         $this->token = (!empty($token)) ? $token : $this->token;
@@ -172,7 +171,7 @@ class BaseService
      * */ 
     public function token($token = [])
     {
-        $this->token = $token;
+        $this->token = array_merge_recursive_distinct($this->token, $token);
         return $this;
     }
 
@@ -203,16 +202,26 @@ class BaseService
      *  @param array $options
      *  @return mixed
      * */ 
-    public function fields(array $fields = []) {
-        $this->_formatOption($fields);
+    public function fields(array $fields = []) 
+    {
+        $this->_formatOption($fields, 'query');
         return $this;
     }
 
-    protected function _formatOption(array $fields = []) : void
+    public function param(array $param = [])
     {
-        $this->options['fields'] = (!empty($this->options['fields']))
-            ? array_merge_recursive_distinct($this->options['fields'], $fields)
-            : $fields; 
+        $this->_formatOption($param, 'form_params');
+        return $this;
+    }
+
+    // public function fields() 
+
+    protected function _formatOption(array $fields = [], string $type = null) : void
+    {
+        if ($type != null) {
+            $fields[$type] = $fields;
+        }
+        $this->options = array_merge_recursive_distinct($this->options, $fields);
         if (!empty($this->token)) {
             $header = [];
             foreach ($this->token as $k => $v ) {
@@ -229,84 +238,68 @@ class BaseService
     }
 
     public function get()
-    {   
-        $this->getAllProperties();
-        $response = false;
-        $curl = curl_init();
-        $fields = '';
-        foreach ($this->options as $k => $v) {
-            if ($k !== 'headers') {
-                $fields .= $k . '=' . $v . '&';
+    {
+        $this->stream();
+        $response = (object)[];
+        try {
+            $res = $this->guzzle->get($this->url, $this->options);
+            $content = $res->getBody()->getContents();
+            $response = json_decode($content);
+          
+            if (isset($response->code) && $response->code != 200 && isset($response->message) && $response->message) {
+                $this->error(['url' => $this->url], 'GET', $response->code, $response->message);
             }
+        } catch (ClientException $e) {
+            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+        } catch (ServerException $e) {
+            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+        } catch (RequestException $e) {
+            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+        } catch (ErrorException $e) {
+            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
         }
-        $curlopt_url = $this->url . '?' . $fields;
-        $header = [];
-        foreach ($this->options['headers'] as $k => $v) {
-            $newValue = $k . ': ' . $v;
-            array_push($header, $newValue);
-        }
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => $curlopt_url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => $this->timeOut,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_HTTPHEADER =>$header,
-        ));
-
-        $response = curl_exec($curl);
-        $response = json_decode($response);
-        curl_close($curl);
         return $response;
     }
 
-    // public function get()
-    // {
-    //     try {
-    //         $response = false;
-    //         $res = $this->guzzle->get($this->url, $this->options);
-    //         $content = $res->getBody()->getContents();
-    //         $response = json_decode($content);
-          
-    //         if (isset($response->code) && $response->code != 200 && isset($response->message) && $response->message) {
-    //             $this->error(['url' => $this->url], 'GET', $response->code, $response->message);
-    //         }
-    //     } catch (ClientException $e) {
-    //         $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
-    //     } catch (ServerException $e) {
-    //         $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
-    //     } catch (RequestException $e) {
-    //         $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
-    //     } catch (ErrorException $e) {
-    //         $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
-    //     }
+    public function post()
+    {
+        $response = (object)[];
+        $this->stream();
+        try {
+            $res = $this->guzzle->post($this->url, $this->options);
+            $content = $res->getBody()->getContents();
+            $response = json_decode($content);
+            if (isset($response->code) && $response->code != 200 && isset($response->message) && $response->message) {
+                $this->error(['url' => $this->url], 'POST', $response->code, $response->message);
+            }
+        } catch (ClientException $e) {
+            $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
+        } catch (ServerException $e) {
+            $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
+        } catch (RequestException $e) {
+            $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
+        } catch (ErrorException $e) {
+            $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
+        }
 
-    //     return $response;
-    // }
-
-    // public function post()
-    // {
-
-    // }
+        return $response;
+    }
 
     public function error($data = [], $method, $code = 404, $message = null)
     {
-        $user = Auth::user();
-        $username = $user ? $user->username . ' [' . $user->email_address . ']' : '';
-        $params = config('site.notification');
+        // $user = Auth::user();
+        // $username = $user ? $user->username . ' [' . $user->email_address . ']' : '';
         $data = array_merge([
             'method' => $method,
             'uri' => null,
             'options' => [],
             'response' => null,
         ], $data);
-        $url = isset($data['url']) ? $data['url'] : null;
+        // $url = isset($data['url']) ? $data['url'] : null;
         $method = $data['method'];
-        $options = $data['options'];
+        // $options = $data['options'];
         $response = $data['response'];
+        return $response;
     }
 
     public function getConfig()
@@ -314,7 +307,7 @@ class BaseService
         return $this->configs;
     }
 
-    protected function getAllProperties(): void
+    protected function stream() : void
     {
         $this->setHost();
         $this->getHost();
