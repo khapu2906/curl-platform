@@ -15,12 +15,12 @@ class GoogleService
         $this->_platformService = new PlatformService('google', 30);
     }
 
-    public function getExchangeToken(array $fields)
+    public function getExchangeToken(array $query)
     {
         $response = $this->_platformService->host('account')
                                         ->version('v2')
                                         ->slug('auth')
-                                        ->fields($fields)
+                                        ->query($query)
                                         ->get();
         return $response;
     }

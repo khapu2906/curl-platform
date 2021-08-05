@@ -58,8 +58,8 @@ class BaseService
         $this->version = (!empty($this->configs['version']))
             ? current($this->configs['version']) : null;
         $this->options = [
-                            'headers' => []
-                           ];
+            'headers' => []
+        ];
     }
 
     /** 
@@ -199,12 +199,12 @@ class BaseService
     }
 
     /** 
-     *  @param array $options
+     *  @param array $query
      *  @return mixed
      * */ 
-    public function fields(array $fields = []) 
+    public function query(array $query = []) 
     {
-        $this->_formatOption($fields, 'query');
+        $this->_formatOption($query, 'query');
         return $this;
     }
 
@@ -214,14 +214,13 @@ class BaseService
         return $this;
     }
 
-    // public function fields() 
 
-    protected function _formatOption(array $fields = [], string $type = null) : void
+    protected function _formatOption(array $options = [], string $type = null) : void
     {
         if ($type != null) {
-            $fields[$type] = $fields;
+            $options[$type] = $options;
         }
-        $this->options = array_merge_recursive_distinct($this->options, $fields);
+        $this->options = array_merge_recursive_distinct($this->options, $options);
         if (!empty($this->token)) {
             $header = [];
             foreach ($this->token as $k => $v ) {

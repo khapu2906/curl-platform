@@ -16,37 +16,37 @@ class FacebookService
 
     }
 
-    public function getInsight(array $params, array $tokens, array $fields)
+    public function getInsight(array $params, array $tokens, array $query)
     {
-        $response = $this->_platformService->fields($fields)
+        $response = $this->_platformService->query($query)
                                         ->slug('insights', $params)
                                         ->token($tokens)
                                         ->get();
         return $response;
     }
 
-    public function getAccount(array $params, array $tokens, array $fields)
+    public function getAccount(array $params, array $tokens, array $query)
     {
         $response = $this->_platformService->slug('account', $params)
                                         ->token($tokens)
-                                        ->fields($fields)
+                                        ->query($query)
                                         ->get();
         return $response;
     }
 
-    public function getAds(array $params, array $tokens, array $fields)
+    public function getAds(array $params, array $tokens, array $query)
     {
         $response = $this->_platformService->slug('ads', $params)
                                         ->token($tokens)
-                                        ->fields($fields)
+                                        ->query($query)
                                         ->get();
         return $response;
     }
 
-    public function getLongTimeToken(array $fields)
+    public function getLongTimeToken(array $query)
     {
         $response = $this->_platformService->slug('long_time_token')
-                                        ->fields($fields)
+                                        ->query($query)
                                         ->get();
         return $response;
     }
