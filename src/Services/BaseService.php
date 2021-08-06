@@ -1,14 +1,21 @@
 <?php
 
 namespace Khapu\CurlPlatform\Services;
+
 use ErrorException;
+use ReflectionClass;
+
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\RequestException;
+use Khapu\CurlPlatform\Exceptions\ErrorMethodException;
 use Illuminate\Support\Facades\Auth;
+
+
 class BaseService 
 {
+
     protected $host;
 
     protected $slug;
@@ -62,16 +69,29 @@ class BaseService
         ];
     }
 
+    public function __call($method, $param)
+    {   
+        $this->stream();
+        $class = get_called_class();
+        $interface = class_implements($class);
+        $structor = new ReflectionClass(current($interface));
+        $error = [
+            'method' => $method,
+            'param' => $param,
+            'structor' => $structor
+        ];
+    }
+
     /** 
      *  @param string $host
      *  @return mixed
      * */ 
-    protected function setHost(string $host = null) : void
+    protected function setHost(string $host = null): void
     {
         $this->host = (!empty($host)) ? $this->configs['host'][$host] : $this->host;
     }
 
-    protected function getHost()
+    public function getHost()
     {
         return $this->host;
     }
@@ -85,7 +105,7 @@ class BaseService
         $this->version = (!empty($version)) ? $version : $this->version;
     }
 
-    protected function getVersion()
+    public function getVersion()
     {
         return $this->version;
     }
@@ -98,7 +118,7 @@ class BaseService
             : $this->path;
     }
 
-    protected function getPath()
+    public function getPath()
     {
         return $this->path;
     }
@@ -108,7 +128,7 @@ class BaseService
         $this->url = $this->path . '/' . $this->slug;
     }
 
-    protected function getUrl()
+    public function getUrl()
     {
         return $this->url;
     }
@@ -116,12 +136,12 @@ class BaseService
     /** 
      *  @param array $token
      * */ 
-    public function setToken(array $token = []) : void
+    protected function setToken(array $token = []): void
     {
         $this->token = (!empty($token)) ? $token : $this->token;
     }
 
-    protected function getToken()
+    public function getToken()
     {
         return $this->token;
     }
@@ -129,12 +149,12 @@ class BaseService
     /** 
      *  @param array $option
      * */ 
-    protected function setOptions(array $options = []) : void 
+    protected function setOptions(array $options = []): void 
     {
         $this->options = (!empty($options)) ? $options : $this->options;
     }
 
-    protected function getOptions()
+    public function getOptions()
     {
         return $this->options;
     }
@@ -204,18 +224,17 @@ class BaseService
      * */ 
     public function query(array $query = []) 
     {
-        $this->_formatOption($query, 'query');
+        $this->buildOption($query, 'query');
         return $this;
     }
 
     public function param(array $param = [])
     {
-        $this->_formatOption($param, 'form_params');
+        $this->buildOption($param, 'form_params');
         return $this;
     }
 
-
-    protected function _formatOption(array $options = [], string $type = null) : void
+    protected function buildOption(array $options = [], string $type = null): void
     {
         if ($type != null) {
             $options[$type] = $options;
@@ -262,8 +281,8 @@ class BaseService
 
     public function post()
     {
-        $response = (object)[];
         $this->stream();
+        $response = (object)[];
         try {
             $res = $this->guzzle->post($this->url, $this->options);
             $content = $res->getBody()->getContents();
@@ -306,20 +325,14 @@ class BaseService
         return $this->configs;
     }
 
-    protected function stream() : void
+    protected function stream(): void
     {
         $this->setHost();
-        $this->getHost();
         $this->setVersion();
-        $this->getVersion();
         $this->setPath();
-        $this->getPath();
         $this->setUrl();
-        $this->getUrl();
         $this->setToken();
-        $this->getToken();
         $this->setOptions();
-        $this->_formatOption();
-        $this->getOptions();
+        $this->buildOption();
     }
 }

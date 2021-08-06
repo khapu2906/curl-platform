@@ -6,8 +6,6 @@ use Khapu\CurlPlatform\Services\Reports\PlatformService;
 
 class GoogleService 
 {
-    private $_config;
-
     private $_platformService;
 
     public function __construct()
@@ -18,19 +16,19 @@ class GoogleService
     public function getExchangeToken(array $query)
     {
         $response = $this->_platformService->host('account')
-                                        ->version('v2')
-                                        ->slug('auth')
-                                        ->query($query)
-                                        ->get();
+                                            ->version('v2')
+                                            ->slug('auth')
+                                            ->query($query)
+                                            ->get();
         return $response;
     }
 
     public function getAccessToken(array $param)
     {
         $response = $this->_platformService->host('auth')
-                                        ->slug('token')
-                                        ->param($param)
-                                        ->post();
+                                            ->slug('token')
+                                            ->param($param)
+                                            ->post();
         return $response;
     }
     
