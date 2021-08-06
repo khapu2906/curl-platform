@@ -1,9 +1,10 @@
 <?php
 
-namespace Khapu\CurlPlatform\Services\Reports;
+namespace Khapu\CurlPlatform\Services\Reports\Facebook;
 
 use Khapu\CurlPlatform\Services\Reports\PlatformService;
-class FacebookService 
+
+class AdsService 
 {
     private $_platformService;
 
@@ -40,11 +41,5 @@ class FacebookService
         return $response;
     }
 
-    public function getLongTimeToken(array $query)
-    {
-        $response = $this->_platformService->slug('long_time_token')
-                                        ->query($query)
-                                        ->get();
-        return $response;
-    }
+   
 }

@@ -40,6 +40,6 @@ interface PlatformInterface
 
     public function post();
 
-    public function error($data = [], $method, $code = 404, $message = null);
+    public function error($data = [], $method, $code, $message = null);
  
 }

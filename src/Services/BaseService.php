@@ -10,8 +10,6 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\RequestException;
 use Khapu\CurlPlatform\Exceptions\ErrorMethodException;
-use Illuminate\Support\Facades\Auth;
-
 
 class BaseService 
 {
@@ -234,10 +232,11 @@ class BaseService
         return $this;
     }
 
-    protected function buildOption(array $options = [], string $type = null): void
+    protected function buildOption(array $option = [], string $type = null): void
     {
+        $options = [];
         if ($type != null) {
-            $options[$type] = $options;
+            $options[$type] = $option;
         }
         $this->options = array_merge_recursive_distinct($this->options, $options);
         if (!empty($this->token)) {
@@ -263,18 +262,17 @@ class BaseService
             $res = $this->guzzle->get($this->url, $this->options);
             $content = $res->getBody()->getContents();
             $response = json_decode($content);
-          
             if (isset($response->code) && $response->code != 200 && isset($response->message) && $response->message) {
                 $this->error(['url' => $this->url], 'GET', $response->code, $response->message);
             }
         } catch (ClientException $e) {
-            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+            $response = $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
         } catch (ServerException $e) {
-            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+            $response = $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
         } catch (RequestException $e) {
-            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+            $response = $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
         } catch (ErrorException $e) {
-            $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
+            $response = $this->error(['url' => $this->url], 'GET', $e->getCode(), $e->getMessage());
         }
         return $response;
     }
@@ -291,33 +289,28 @@ class BaseService
                 $this->error(['url' => $this->url], 'POST', $response->code, $response->message);
             }
         } catch (ClientException $e) {
-            $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
+            $response = $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
         } catch (ServerException $e) {
-            $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
+            $response = $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
         } catch (RequestException $e) {
-            $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
+            $response = $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
         } catch (ErrorException $e) {
-            $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
+            $response = $this->error(['url' => $this->url], 'POST', $e->getCode(), $e->getMessage());
         }
-
         return $response;
     }
 
-    public function error($data = [], $method, $code = 404, $message = null)
+    public function error($data = [], $method, $code, $message = null)
     {
-        // $user = Auth::user();
-        // $username = $user ? $user->username . ' [' . $user->email_address . ']' : '';
         $data = array_merge([
             'method' => $method,
             'uri' => null,
             'options' => [],
-            'response' => null,
+            'code' => $code,
+            'response' => $message,
         ], $data);
-        // $url = isset($data['url']) ? $data['url'] : null;
-        $method = $data['method'];
-        // $options = $data['options'];
-        $response = $data['response'];
-        return $response;
+        $url = isset($data['url']) ? $data['url'] : null;
+        return (object)$data;
     }
 
     public function getConfig()

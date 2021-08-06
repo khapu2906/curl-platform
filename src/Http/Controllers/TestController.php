@@ -1,34 +1,116 @@
 <?php
 
 namespace Khapu\CurlPlatform\Http\Controllers;
+
 use App\Http\Controllers\Controller;
 use App\Http\Controllers;
+use App\Jobs\SyncAccountFacebook;
+use App\Models\Account;
+use App\Models\Campaign;
 use Illuminate\Http\Request;
-use Khapu\CurlPlatform\Services\Reports\FacebookService;
-use Khapu\CurlPlatform\Services\Reports\GoogleService;
-use Khapu\CurlPlatform\Services\Reports\PlatformService;
+use Khapu\CurlPlatform\Services\Reports\Facebook\AdsService;
 
 class TestController extends Controller
 {
 
-    protected $_platform;
+    protected $facebookService;
 
-    public function __construct()
+    public function __construct(AdsService $facebookService)
     {
-        $this->_platform = new FacebookService();
+        $this->facebookService = $facebookService;
     }
 
+    // lấy thông tin của một campagin
     public function index()
     {
-        $fields = [
+
+        $query = [
             'fields' => 'account_currency,account_id,account_name,action_values,clicks,reach,cpm,cpc,ctr,spend,campaign_name,canvas_avg_view_time,conversions,conversion_values,cost_per_ad_click,cost_per_conversion,impressions',
-            'date_preset' => 'last_year'
+            'date_preset' => 'last_year',
+            'time_increment' => 1
         ];
         $token = [
-            'access_token' => 'EAAFxHGbIZBAcBAE9Eukk33gkOzogiYT7aJrU4DQBIv5jHZARXzunfzY80CbYt1g0N2e9SI306fkyA8calDanmXpZA19uA8o3K0iAkTn48JlKipdhRz7iox0Vh6ZBkwZAMs87hvDA5esUMzb2RWVzZByaXjIcabtoMx6IavaOyuKoUGbJZBgM931',
+            'access_token' => 'EAAFxHGbIZBAcBABVniy23ZAKcuOsQfYhkFOniKh07IRqZBcLVT6UK1JzDBVhR1qJJTVOIIYP00sMseU0FP50RaFiSQHFq93tsWGnWUdsE5AtzRjl67ZBQX6UjdWxJ8VEYzR8PByqeYPdUCOhJSmstTZAkwlm4uYUTkaN569ZBCEcFP9uhWJJox',
         ];
+
         $params = ['id' => '23844819598520694'];
-        $data = $this->_platform->getInsight($params, $token, $fields);
-        dd($data);
+        dd($this->facebookService->getInsight($params, $token, $query));
+    }
+
+    // lấy thông tin của 1 account
+    public function getAccount($facebookId)
+    {
+        $facebookAccount = Account::where('facebook_id', $facebookId)->first();
+        if (!empty($facebookAccount)) {
+            $fields = [
+                'fields' => 'name,account_status,amount_spent,balance,disable_reason,min_daily_budget,min_campaign_group_spend_cap,spend_cap',
+            ];
+
+            $token = [
+                'access_token' => $facebookAccount->access_token,
+            ];
+
+            $params = [
+                'id' => $facebookId,
+            ];
+
+            dd($this->facebookService->getAccount($params, $token, $fields));
+        }
+    }
+
+
+    // lấy thông tin danh sách ads trong account
+    public function getAds($facebookId)
+    {
+        $facebookAccount = Account::where('facebook_id', $facebookId)->first();
+        if (!empty($facebookAccount)) {
+            $fields = [
+                'fields' => 'name,insights,effective_status,objective,total_count',
+                'time_range' => '{"since":"2019-10-01","until":"2020-10-01"}',
+            ];
+
+            $token = [
+                'access_token' => $facebookAccount->access_token,
+            ];
+
+            $params = [
+                'id' => $facebookId,
+            ];
+
+            dd($this->facebookService->getAds($params, $token, $fields));
+        }
+    }
+
+    public function campaigns($facebookId)
+    {
+        $facebookAccount = Account::where('facebook_id', $facebookId)->first();
+        if (!empty($facebookAccount)) {
+            $fields = [
+                'fields' => 'name,insights,effective_status,objective,total_count',
+            ];
+
+            $token = [
+                'access_token' => $facebookAccount->access_token,
+            ];
+
+            $params = [
+                'id' => $facebookId,
+            ];
+
+            dd($this->facebookService->getCampaigns($params, $token, $fields));
+        }
+    }
+
+    public function saveDataByAccount($facebookId)
+    {
+        $facebookAccount = Account::where('facebook_id', $facebookId)->first();
+        if (!empty($facebookAccount)) {
+
+            dispatch(new SyncAccountFacebook($facebookAccount, $facebookId))->onQueue('facebook');
+        }
+        dd('queue working');
+        // lưu acc
+        // foreach dât cam
+        // lưu cam
     }
 }

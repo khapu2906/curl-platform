@@ -1,10 +1,10 @@
 <?php
 
-namespace Khapu\CurlPlatform\Services\Reports;
+namespace Khapu\CurlPlatform\Services\Reports\Google;
 
 use Khapu\CurlPlatform\Services\Reports\PlatformService;
 
-class GoogleService 
+class AdsService 
 {
     private $_platformService;
 

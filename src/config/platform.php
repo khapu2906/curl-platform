@@ -9,7 +9,7 @@ return [
      *  'version' =>[<version>, ],
      *  'slugs' =>[
      *              <index> => <slug>, 
-     *    If there is unstatic elements in slug, those elements need to 
+     *    If there are unstatic elements in slug, those elements need to 
      *    be typed with sample {<name element>}
      *  ],
      * ]

@@ -10,7 +10,7 @@ use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 class PackageBaseServiceProvider extends ServiceProvider 
 {
 
-    protected $_modulePath =  __DIR__.'/../';
+    protected $_modulePath =  __DIR__.'/';
     
     protected $_moduleConfig = 'config/platform.php';
 
